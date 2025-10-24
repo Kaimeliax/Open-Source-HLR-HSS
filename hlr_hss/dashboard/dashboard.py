@@ -23,7 +23,7 @@ dashboard_bp = Blueprint(
     __name__,
     template_folder=template_dir,
     static_folder=static_dir,
-    static_url_path='/dashboard/static',
+    static_url_path='/static',
     url_prefix='/dashboard'
 )
 
