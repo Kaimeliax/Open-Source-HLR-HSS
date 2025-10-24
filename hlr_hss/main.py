@@ -13,6 +13,7 @@ from hlr_hss.authentication import AuthenticationManager
 from hlr_hss.ocs import OnlineChargingSystem
 from hlr_hss.roaming import RoamingManager
 from hlr_hss.api import create_api
+from hlr_hss.dashboard import create_dashboard_app
 
 
 def setup_logging(config: dict):
@@ -142,6 +143,13 @@ def main():
         logger.info("Initializing REST API...")
         app = create_api(hlr_hss, ocs, roaming_manager)
         
+        # Initialize VERION Dashboard
+        logger.info("Initializing VERION Dashboard...")
+        dashboard_bp = create_dashboard_app(hlr_hss, ocs, roaming_manager)
+        
+        # Register dashboard blueprint
+        app.register_blueprint(dashboard_bp)
+        
         bind_address = api_config.get('bind_address', '0.0.0.0')
         port = api_config.get('port', 8080)
         debug = api_config.get('debug', False)
@@ -150,6 +158,7 @@ def main():
         logger.info("="*60)
         logger.info("HLR/HSS is ready!")
         logger.info(f"API available at: http://{bind_address}:{port}")
+        logger.info(f"Dashboard available at: http://{bind_address}:{port}/dashboard")
         logger.info("="*60)
         
         app.run(host=bind_address, port=port, debug=debug)

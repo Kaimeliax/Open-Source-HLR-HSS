@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERION Dashboard - HLR/HSS Management</title>
+    <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>VERION</h1>
+                <p>HLR/HSS Dashboard</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active" data-section="home">🏠 Home</a></li>
+                <li><a href="#stats" class="nav-link" data-section="stats">📊 Stats</a></li>
+                <li><a href="#sim" class="nav-link" data-section="sim">📱 SIM Management</a></li>
+                <li><a href="#ocs" class="nav-link" data-section="ocs">💰 OCS</a></li>
+                <li><a href="#roaming" class="nav-link" data-section="roaming">🌍 Roaming</a></li>
+                <li><a href="#network" class="nav-link" data-section="network">📡 Network</a></li>
+                <li><a href="#plans" class="nav-link" data-section="plans">🧾 Plans</a></li>
+                <li><a href="#config" class="nav-link" data-section="config">🧩 Configuration</a></li>
+                <li><a href="#users" class="nav-link" data-section="users">👥 Users & Access</a></li>
+                <li><a href="#tools" class="nav-link" data-section="tools">🧠 Tools</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <h2 id="section-title">System Overview</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="refreshCurrentSection()">🔄 Refresh</button>
+                    <span class="user-info">Admin</span>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Home Section -->
+                <section id="section-home" class="content-section active">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>System Overview</h3>
+                            <div id="system-overview" class="card-content">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Subscribers:</span>
+                                    <span class="stat-value" id="total-subscribers">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Sessions:</span>
+                                    <span class="stat-value" id="active-sessions">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">System Uptime:</span>
+                                    <span class="stat-value" id="system-uptime">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">CPU Usage:</span>
+                                    <span class="stat-value" id="cpu-usage">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Memory Usage:</span>
+                                    <span class="stat-value" id="memory-usage">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Network Status</h3>
+                            <div id="network-status" class="card-content">
+                                <div class="status-item">
+                                    <span class="status-label">Diameter:</span>
+                                    <span class="status-badge" id="diameter-status">-</span>
+                                    <span class="status-detail" id="diameter-detail">-</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">GSUP:</span>
+                                    <span class="status-badge" id="gsup-status">-</span>
+                                    <span class="status-detail" id="gsup-detail">-</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">GTP:</span>
+                                    <span class="status-badge" id="gtp-status">-</span>
+                                    <span class="status-detail" id="gtp-detail">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card card-full-width">
+                            <h3>Recent Alerts</h3>
+                            <div id="alerts-list" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stats Section -->
+                <section id="section-stats" class="content-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>Realtime Traffic</h3>
+                            <div id="realtime-traffic" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Subscribers by RAT</h3>
+                            <div id="subscribers-by-rat" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Cell Load</h3>
+                            <div id="cell-load" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Transaction Rate</h3>
+                            <div id="transaction-rate" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-full-width">
+                        <h3>Usage by RAT (2G-5G)</h3>
+                        <div id="usage-by-rat" class="card-content">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SIM Management Section -->
+                <section id="section-sim" class="content-section">
+                    <div class="section-actions">
+                        <input type="text" id="sim-search" placeholder="Search by IMSI or MSISDN..." class="search-box">
+                        <button class="btn-primary" onclick="showAddSubscriberModal()">➕ Add Subscriber</button>
+                    </div>
+                    <div class="card">
+                        <h3>Subscriber List</h3>
+                        <div id="subscribers-list" class="card-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>IMSI</th>
+                                        <th>MSISDN</th>
+                                        <th>Status</th>
+                                        <th>Roaming</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subscribers-table-body">
+                                    <tr>
+                                        <td colspan="5" class="loading">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination" id="subscribers-pagination"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- OCS Section -->
+                <section id="section-ocs" class="content-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>Active Sessions</h3>
+                            <div id="ocs-sessions" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Tariff Profiles</h3>
+                            <div id="ocs-tariffs" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Roaming Section -->
+                <section id="section-roaming" class="content-section">
+                    <div class="subsection-tabs">
+                        <button class="tab-btn active" data-tab="operators">Operators</button>
+                        <button class="tab-btn" data-tab="rates">Data Rates</button>
+                        <button class="tab-btn" data-tab="plans">Roaming Plans</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="tab-operators" class="tab-pane active">
+                            <div class="card">
+                                <h3>Roaming Partners</h3>
+                                <div id="roaming-operators" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-rates" class="tab-pane">
+                            <div class="card">
+                                <h3>Roaming Rate Table</h3>
+                                <div id="roaming-rates" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-plans" class="tab-pane">
+                            <div class="card">
+                                <h3>Roaming Plans</h3>
+                                <div id="roaming-plans" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Network Section -->
+                <section id="section-network" class="content-section">
+                    <div class="subsection-tabs">
+                        <button class="tab-btn active" data-tab="diameter">Diameter Peers</button>
+                        <button class="tab-btn" data-tab="gtp">GTP Sessions</button>
+                        <button class="tab-btn" data-tab="interfaces">Interfaces</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="tab-diameter" class="tab-pane active">
+                            <div class="card">
+                                <h3>Diameter Peers</h3>
+                                <div id="diameter-peers" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-gtp" class="tab-pane">
+                            <div class="card">
+                                <h3>Active GTP Sessions</h3>
+                                <div id="gtp-sessions" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-interfaces" class="tab-pane">
+                            <div class="card">
+                                <h3>Network Interfaces</h3>
+                                <div id="network-interfaces" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Plans Section -->
+                <section id="section-plans" class="content-section">
+                    <div class="subsection-tabs">
+                        <button class="tab-btn active" data-tab="data">Data Plans</button>
+                        <button class="tab-btn" data-tab="voice">Voice & SMS</button>
+                        <button class="tab-btn" data-tab="fwa">FWA / IoT</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="tab-data" class="tab-pane active">
+                            <div class="card">
+                                <h3>Data Plans</h3>
+                                <div id="data-plans" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-voice" class="tab-pane">
+                            <div class="card">
+                                <h3>Voice & SMS Plans</h3>
+                                <div id="voice-plans" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-fwa" class="tab-pane">
+                            <div class="card">
+                                <h3>FWA / IoT Plans</h3>
+                                <div id="fwa-plans" class="card-content">
+                                    <p class="loading">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configuration Section -->
+                <section id="section-config" class="content-section">
+                    <div class="card">
+                        <h3>System Configuration</h3>
+                        <div id="system-config" class="card-content">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Users & Access Section -->
+                <section id="section-users" class="content-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>Admin Accounts</h3>
+                            <div id="admin-accounts" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Login Audit Log</h3>
+                            <div id="audit-log" class="card-content">
+                                <p class="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tools Section -->
+                <section id="section-tools" class="content-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>Ki/OPC Generator</h3>
+                            <div class="card-content">
+                                <button class="btn-primary" onclick="generateKi()">Generate KI</button>
+                                <div id="generated-ki" class="generated-value"></div>
+                                <button class="btn-primary" onclick="generateOpc()">Generate OPC</button>
+                                <div id="generated-opc" class="generated-value"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>PLMN Lookup</h3>
+                            <div class="card-content">
+                                <input type="text" id="plmn-input" placeholder="Enter PLMN ID (e.g., 00101)" class="input-field">
+                                <button class="btn-primary" onclick="lookupPlmn()">Lookup</button>
+                                <div id="plmn-result" class="lookup-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Subscriber Modal -->
+    <div id="add-subscriber-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddSubscriberModal()">&times;</span>
+            <h2>Add New Subscriber</h2>
+            <form id="add-subscriber-form" onsubmit="submitAddSubscriber(event)">
+                <div class="form-group">
+                    <label>IMSI:</label>
+                    <input type="text" name="imsi" required class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>MSISDN:</label>
+                    <input type="text" name="msisdn" required class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>KI:</label>
+                    <input type="text" name="ki" required class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>OPC:</label>
+                    <input type="text" name="opc" required class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="roaming_allowed" checked>
+                        Roaming Allowed
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">Add Subscriber</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('dashboard.static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

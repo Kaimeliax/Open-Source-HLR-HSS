@@ -25,6 +25,7 @@ This is a complete, feature-rich HLR/HSS (Home Location Register / Home Subscrib
 - ✅ **Diameter Routing Agent (DRA)** - Message routing, load balancing, and failover
 - ✅ **Roaming Support** - Partner management and roaming policies
 - ✅ **REST API** - HTTP interface for management and monitoring
+- ✅ **VERION Dashboard** - Comprehensive web UI for system management and monitoring
 
 ### Database Support
 - ✅ In-memory (for testing/development)
@@ -81,10 +82,32 @@ hlr-hss --init-db
 
 The system will start with:
 - REST API on http://localhost:8080
+- **VERION Dashboard** on http://localhost:8080/dashboard
 - In-memory database
 - Sample subscriber (IMSI: 001010000000001)
 
-### 2. Add a subscriber via API
+### 2. Access the VERION Dashboard
+
+Open your web browser and navigate to:
+```
+http://localhost:8080/dashboard
+```
+
+The VERION Dashboard provides a comprehensive web interface for:
+- **System Monitoring** - Real-time system overview, network status, and alerts
+- **Statistics** - Traffic analytics, subscriber counters, and usage graphs
+- **SIM Management** - Add, edit, delete, and search subscribers
+- **OCS Management** - View charging sessions, balances, and tariff profiles
+- **Roaming** - Manage roaming partners, rates, and plans
+- **Network** - Monitor Diameter peers, GTP sessions, and interfaces
+- **Plans** - Configure data, voice, SMS, and IoT service plans
+- **Configuration** - System settings and database configuration
+- **Users & Access** - Admin accounts and audit logs
+- **Tools** - KI/OPC generators, PLMN lookup, and network utilities
+
+![VERION Dashboard](https://github.com/user-attachments/assets/62450535-112a-43f1-ac01-02f98baa68b0)
+
+### 3. Add a subscriber via API
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/subscribers/001010000000002 \
@@ -97,13 +120,13 @@ curl -X POST http://localhost:8080/api/v1/subscribers/001010000000002 \
   }'
 ```
 
-### 3. Query subscriber
+### 4. Query subscriber
 
 ```bash
 curl http://localhost:8080/api/v1/subscribers/001010000000002
 ```
 
-### 4. Generate authentication vector
+### 5. Generate authentication vector
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/001010000000002
@@ -389,7 +412,7 @@ This project implements standards from:
 - [ ] Complete 5G N-interfaces implementation
 - [ ] MAP protocol for 2G support
 - [ ] SIGTRAN stack (M3UA, SCCP)
-- [ ] WebUI for management
+- [x] **WebUI for management (VERION Dashboard)**
 - [ ] Prometheus metrics export
 - [ ] Kubernetes deployment templates
 - [ ] Performance optimization
