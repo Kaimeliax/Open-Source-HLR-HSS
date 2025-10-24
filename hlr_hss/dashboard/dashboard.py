@@ -6,17 +6,31 @@ import os
 import json
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, send_from_directory
-from flask_cors import CORS
+from flask import Blueprint, render_template, jsonify, request, send_from_directory
 from typing import Optional
 import random
 
 logger = logging.getLogger(__name__)
 
+# Get the dashboard directory path
+dashboard_dir = os.path.dirname(os.path.abspath(__file__))
+template_dir = os.path.join(dashboard_dir, 'templates')
+static_dir = os.path.join(dashboard_dir, 'static')
+
+# Create Blueprint
+dashboard_bp = Blueprint(
+    'dashboard',
+    __name__,
+    template_folder=template_dir,
+    static_folder=static_dir,
+    static_url_path='/dashboard/static',
+    url_prefix='/dashboard'
+)
+
 
 def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     """
-    Create VERION Dashboard Flask application
+    Create VERION Dashboard Blueprint
     
     Args:
         hlr_hss: HLR_HSS instance
@@ -25,50 +39,39 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
         dra: DiameterRoutingAgent instance (optional)
         
     Returns:
-        Flask application with dashboard
+        Flask Blueprint with dashboard
     """
-    # Get the dashboard directory path
-    dashboard_dir = os.path.dirname(os.path.abspath(__file__))
-    template_dir = os.path.join(dashboard_dir, 'templates')
-    static_dir = os.path.join(dashboard_dir, 'static')
-    
-    app = Flask(__name__,
-                template_folder=template_dir,
-                static_folder=static_dir,
-                static_url_path='/dashboard/static')
-    CORS(app)
-    
-    # Store instances
-    app.hlr_hss = hlr_hss
-    app.ocs = ocs
-    app.roaming_manager = roaming_manager
-    app.dra = dra
+    # Store instances in blueprint config
+    dashboard_bp.hlr_hss = hlr_hss
+    dashboard_bp.ocs = ocs
+    dashboard_bp.roaming_manager = roaming_manager
+    dashboard_bp.dra = dra
     
     # ==================== Dashboard Routes ====================
     
-    @app.route('/dashboard')
-    @app.route('/dashboard/')
+    @dashboard_bp.route('/')
+    @dashboard_bp.route('/dashboard/')
     def dashboard_home():
         """Main dashboard view"""
         return render_template('dashboard.html')
     
     # ==================== Home Section ====================
     
-    @app.route('/dashboard/api/home/overview')
+    @dashboard_bp.route('/api/home/overview')
     def home_overview():
         """Get system overview data"""
         try:
             # Get subscriber count
             subscriber_count = 0
-            if hasattr(app.hlr_hss.db, 'count_subscribers'):
-                subscriber_count = app.hlr_hss.db.count_subscribers()
-            elif hasattr(app.hlr_hss.db, 'list_subscribers'):
-                subscriber_count = len(app.hlr_hss.db.list_subscribers(limit=10000))
+            if hasattr(dashboard_bp.hlr_hss.db, 'count_subscribers'):
+                subscriber_count = dashboard_bp.hlr_hss.db.count_subscribers()
+            elif hasattr(dashboard_bp.hlr_hss.db, 'list_subscribers'):
+                subscriber_count = len(dashboard_bp.hlr_hss.db.list_subscribers(limit=10000))
             
             # Get active sessions count
             active_sessions = 0
-            if app.ocs and hasattr(app.ocs, 'list_active_sessions'):
-                active_sessions = len(app.ocs.list_active_sessions())
+            if dashboard_bp.ocs and hasattr(dashboard_bp.ocs, 'list_active_sessions'):
+                active_sessions = len(dashboard_bp.ocs.list_active_sessions())
             
             return jsonify({
                 'subscribers_total': subscriber_count,
@@ -82,7 +85,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting home overview: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/home/network-status')
+    @dashboard_bp.route('/api/home/network-status')
     def home_network_status():
         """Get network interfaces status"""
         return jsonify({
@@ -104,7 +107,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             }
         })
     
-    @app.route('/dashboard/api/home/alerts')
+    @dashboard_bp.route('/api/home/alerts')
     def home_alerts():
         """Get recent alerts"""
         alerts = [
@@ -115,7 +118,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Stats Section ====================
     
-    @app.route('/dashboard/api/stats/realtime')
+    @dashboard_bp.route('/api/stats/realtime')
     def stats_realtime():
         """Get realtime traffic statistics"""
         return jsonify({
@@ -125,7 +128,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             'latency_ms': round(random.uniform(1, 10), 2)
         })
     
-    @app.route('/dashboard/api/stats/subscribers')
+    @dashboard_bp.route('/api/stats/subscribers')
     def stats_subscribers():
         """Get subscriber counters by RAT"""
         return jsonify({
@@ -135,7 +138,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             '5g_online': random.randint(100, 1000)
         })
     
-    @app.route('/dashboard/api/stats/cells')
+    @dashboard_bp.route('/api/stats/cells')
     def stats_cells():
         """Get cell/node load statistics"""
         return jsonify({
@@ -145,7 +148,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             'overloaded_cells': random.randint(0, 3)
         })
     
-    @app.route('/dashboard/api/stats/transactions')
+    @dashboard_bp.route('/api/stats/transactions')
     def stats_transactions():
         """Get transaction rate statistics"""
         return jsonify({
@@ -154,7 +157,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             'total_tps': random.randint(600, 2500)
         })
     
-    @app.route('/dashboard/api/stats/usage-by-rat')
+    @dashboard_bp.route('/api/stats/usage-by-rat')
     def stats_usage_by_rat():
         """Get data usage by RAT"""
         return jsonify({
@@ -164,7 +167,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             '5g': {'data_gb': round(random.uniform(100, 300), 2), 'percentage': 10}
         })
     
-    @app.route('/dashboard/api/stats/graphs/<period>')
+    @dashboard_bp.route('/api/stats/graphs/<period>')
     def stats_graphs(period):
         """Get historical stats for graphs (day/week/month)"""
         # Generate sample time-series data
@@ -181,7 +184,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== SIM Management Section ====================
     
-    @app.route('/dashboard/api/sim/subscribers')
+    @dashboard_bp.route('/api/sim/subscribers')
     def sim_subscribers():
         """List subscribers with pagination"""
         page = request.args.get('page', 1, type=int)
@@ -190,8 +193,8 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
         
         try:
             subscribers = []
-            if hasattr(app.hlr_hss.db, 'list_subscribers'):
-                all_subs = app.hlr_hss.db.list_subscribers(limit=per_page * 10)
+            if hasattr(dashboard_bp.hlr_hss.db, 'list_subscribers'):
+                all_subs = dashboard_bp.hlr_hss.db.list_subscribers(limit=per_page * 10)
                 
                 # Filter by search term
                 if search:
@@ -217,11 +220,11 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error listing subscribers: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/sim/subscriber/<imsi>')
+    @dashboard_bp.route('/api/sim/subscriber/<imsi>')
     def sim_subscriber_details(imsi):
         """Get subscriber details"""
         try:
-            subscriber = app.hlr_hss.get_subscriber(imsi)
+            subscriber = dashboard_bp.hlr_hss.get_subscriber(imsi)
             if not subscriber:
                 return jsonify({'error': 'Subscriber not found'}), 404
             
@@ -239,7 +242,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting subscriber details: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/sim/subscriber', methods=['POST'])
+    @dashboard_bp.route('/api/sim/subscriber', methods=['POST'])
     def sim_create_subscriber():
         """Create new subscriber"""
         try:
@@ -257,7 +260,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
                 roaming_allowed=data.get('roaming_allowed', True)
             )
             
-            success = app.hlr_hss.create_subscriber(subscriber)
+            success = dashboard_bp.hlr_hss.create_subscriber(subscriber)
             if success:
                 return jsonify({'message': 'Subscriber created', 'imsi': subscriber.imsi}), 201
             else:
@@ -266,12 +269,12 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error creating subscriber: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/sim/subscriber/<imsi>', methods=['PUT'])
+    @dashboard_bp.route('/api/sim/subscriber/<imsi>', methods=['PUT'])
     def sim_update_subscriber(imsi):
         """Update subscriber"""
         try:
             data = request.json
-            success = app.hlr_hss.update_subscriber(imsi, data)
+            success = dashboard_bp.hlr_hss.update_subscriber(imsi, data)
             if success:
                 return jsonify({'message': 'Subscriber updated'})
             else:
@@ -280,11 +283,11 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error updating subscriber: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/sim/subscriber/<imsi>', methods=['DELETE'])
+    @dashboard_bp.route('/api/sim/subscriber/<imsi>', methods=['DELETE'])
     def sim_delete_subscriber(imsi):
         """Delete subscriber"""
         try:
-            success = app.hlr_hss.delete_subscriber(imsi)
+            success = dashboard_bp.hlr_hss.delete_subscriber(imsi)
             if success:
                 return jsonify({'message': 'Subscriber deleted'})
             else:
@@ -293,7 +296,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error deleting subscriber: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/sim/export')
+    @dashboard_bp.route('/api/sim/export')
     def sim_export():
         """Export subscribers as XML"""
         # This would export subscriber data
@@ -301,14 +304,14 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== OCS Section ====================
     
-    @app.route('/dashboard/api/ocs/sessions')
+    @dashboard_bp.route('/api/ocs/sessions')
     def ocs_sessions():
         """Get active OCS sessions"""
         try:
-            if not app.ocs:
+            if not dashboard_bp.ocs:
                 return jsonify({'error': 'OCS not available'}), 501
             
-            sessions = app.ocs.list_active_sessions()
+            sessions = dashboard_bp.ocs.list_active_sessions()
             return jsonify({
                 'sessions': [
                     {
@@ -325,11 +328,11 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting OCS sessions: {e}")
             return jsonify({'sessions': [], 'total': 0})
     
-    @app.route('/dashboard/api/ocs/balance/<imsi>')
+    @dashboard_bp.route('/api/ocs/balance/<imsi>')
     def ocs_balance(imsi):
         """Get subscriber balance"""
         try:
-            if not app.ocs:
+            if not dashboard_bp.ocs:
                 return jsonify({'error': 'OCS not available'}), 501
             
             # Get balance from OCS
@@ -344,7 +347,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting balance: {e}")
             return jsonify({'error': str(e)}), 500
     
-    @app.route('/dashboard/api/ocs/tariffs')
+    @dashboard_bp.route('/api/ocs/tariffs')
     def ocs_tariffs():
         """Get tariff profiles"""
         return jsonify({
@@ -357,14 +360,14 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Roaming Section ====================
     
-    @app.route('/dashboard/api/roaming/operators')
+    @dashboard_bp.route('/api/roaming/operators')
     def roaming_operators():
         """Get roaming operators/partners"""
         try:
-            if not app.roaming_manager:
+            if not dashboard_bp.roaming_manager:
                 return jsonify({'partners': []})
             
-            partners = app.roaming_manager.list_partners()
+            partners = dashboard_bp.roaming_manager.list_partners()
             return jsonify({
                 'partners': [
                     {
@@ -382,7 +385,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting roaming operators: {e}")
             return jsonify({'partners': []})
     
-    @app.route('/dashboard/api/roaming/rates')
+    @dashboard_bp.route('/api/roaming/rates')
     def roaming_rates():
         """Get roaming data rates"""
         return jsonify({
@@ -393,7 +396,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             ]
         })
     
-    @app.route('/dashboard/api/roaming/plans')
+    @dashboard_bp.route('/api/roaming/plans')
     def roaming_plans():
         """Get roaming plans"""
         return jsonify({
@@ -406,7 +409,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Network Section ====================
     
-    @app.route('/dashboard/api/network/diameter-peers')
+    @dashboard_bp.route('/api/network/diameter-peers')
     def network_diameter_peers():
         """Get Diameter peers status"""
         try:
@@ -437,8 +440,8 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
                 }
             ]
             
-            if app.dra:
-                dra_peers = app.dra.get_peer_status() if hasattr(app.dra, 'get_peer_status') else []
+            if dashboard_bp.dra:
+                dra_peers = dashboard_bp.dra.get_peer_status() if hasattr(dashboard_bp.dra, 'get_peer_status') else []
                 if dra_peers:
                     peers = dra_peers
             
@@ -447,7 +450,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             logger.error(f"Error getting diameter peers: {e}")
             return jsonify({'peers': []})
     
-    @app.route('/dashboard/api/network/gtp-sessions')
+    @dashboard_bp.route('/api/network/gtp-sessions')
     def network_gtp_sessions():
         """Get active GTP sessions"""
         return jsonify({
@@ -458,7 +461,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             'total': 2
         })
     
-    @app.route('/dashboard/api/network/interfaces')
+    @dashboard_bp.route('/api/network/interfaces')
     def network_interfaces():
         """Get network interface configuration"""
         return jsonify({
@@ -471,7 +474,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Plans Section ====================
     
-    @app.route('/dashboard/api/plans/data')
+    @dashboard_bp.route('/api/plans/data')
     def plans_data():
         """Get data plans"""
         return jsonify({
@@ -482,7 +485,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             ]
         })
     
-    @app.route('/dashboard/api/plans/voice')
+    @dashboard_bp.route('/api/plans/voice')
     def plans_voice():
         """Get voice & SMS plans"""
         return jsonify({
@@ -492,7 +495,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             ]
         })
     
-    @app.route('/dashboard/api/plans/fwa')
+    @dashboard_bp.route('/api/plans/fwa')
     def plans_fwa():
         """Get FWA/IoT plans"""
         return jsonify({
@@ -504,7 +507,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Configuration Section ====================
     
-    @app.route('/dashboard/api/config/system')
+    @dashboard_bp.route('/api/config/system')
     def config_system():
         """Get system configuration"""
         return jsonify({
@@ -522,7 +525,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Users & Access Section ====================
     
-    @app.route('/dashboard/api/users/admins')
+    @dashboard_bp.route('/api/users/admins')
     def users_admins():
         """Get admin users"""
         return jsonify({
@@ -532,7 +535,7 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
             ]
         })
     
-    @app.route('/dashboard/api/users/audit')
+    @dashboard_bp.route('/api/users/audit')
     def users_audit():
         """Get login audit log"""
         return jsonify({
@@ -544,21 +547,21 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     # ==================== Tools Section ====================
     
-    @app.route('/dashboard/api/tools/generate-ki')
+    @dashboard_bp.route('/api/tools/generate-ki')
     def tools_generate_ki():
         """Generate random KI key"""
         import secrets
         ki = secrets.token_hex(16).upper()
         return jsonify({'ki': ki})
     
-    @app.route('/dashboard/api/tools/generate-opc')
+    @dashboard_bp.route('/api/tools/generate-opc')
     def tools_generate_opc():
         """Generate random OPC key"""
         import secrets
         opc = secrets.token_hex(16).upper()
         return jsonify({'opc': opc})
     
-    @app.route('/dashboard/api/tools/plmn-lookup/<plmn_id>')
+    @dashboard_bp.route('/api/tools/plmn-lookup/<plmn_id>')
     def tools_plmn_lookup(plmn_id):
         """Look up PLMN information"""
         # Sample PLMN database
@@ -579,4 +582,4 @@ def create_dashboard_app(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     
     logger.info("VERION Dashboard initialized")
     
-    return app
+    return dashboard_bp

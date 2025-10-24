@@ -145,26 +145,10 @@ def main():
         
         # Initialize VERION Dashboard
         logger.info("Initializing VERION Dashboard...")
-        dashboard_app = create_dashboard_app(hlr_hss, ocs, roaming_manager)
+        dashboard_bp = create_dashboard_app(hlr_hss, ocs, roaming_manager)
         
-        # Merge dashboard routes into main app
-        for rule in dashboard_app.url_map.iter_rules():
-            if rule.endpoint != 'static':
-                app.add_url_rule(
-                    rule.rule,
-                    endpoint=rule.endpoint,
-                    view_func=dashboard_app.view_functions[rule.endpoint],
-                    methods=rule.methods
-                )
-        
-        # Register dashboard static files
-        @app.route('/dashboard/static/<path:filename>')
-        def dashboard_static(filename):
-            import os
-            dashboard_dir = os.path.dirname(os.path.abspath(__file__))
-            static_dir = os.path.join(dashboard_dir, 'dashboard', 'static')
-            from flask import send_from_directory
-            return send_from_directory(static_dir, filename)
+        # Register dashboard blueprint
+        app.register_blueprint(dashboard_bp)
         
         bind_address = api_config.get('bind_address', '0.0.0.0')
         port = api_config.get('port', 8080)
