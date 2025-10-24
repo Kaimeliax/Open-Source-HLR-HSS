@@ -1,0 +1,117 @@
+# HLR/HSS Configuration
+
+# Network Identity
+network:
+  plmn_id: "00101"  # MCC=001, MNC=01
+  mcc: "001"
+  mnc: "01"
+  network_name: "Open Source Network"
+
+# HLR/HSS Server
+hlr_hss:
+  host: "hss.opennetwork.local"
+  realm: "opennetwork.local"
+  
+  # Diameter interfaces
+  diameter:
+    bind_address: "0.0.0.0"
+    port: 3868
+    
+    # Supported applications
+    applications:
+      - s6a  # LTE MME-HSS
+      - s6d  # 3G SGSN-HSS
+      - cx   # IMS CSCF-HSS
+      - sh   # IMS Application Server
+
+# Database Configuration
+database:
+  type: "memory"  # Options: memory, postgresql, mysql, mongodb
+  
+  # PostgreSQL configuration (if type=postgresql)
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "hlr_hss"
+    username: "hlr_user"
+    password: "hlr_password"
+  
+  # MySQL configuration (if type=mysql)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "hlr_hss"
+    username: "hlr_user"
+    password: "hlr_password"
+  
+  # MongoDB configuration (if type=mongodb)
+  mongodb:
+    host: "localhost"
+    port: 27017
+    database: "hlr_hss"
+    username: "hlr_user"
+    password: "hlr_password"
+
+# Authentication
+authentication:
+  default_algorithm: "milenage"  # Options: milenage, xor, tuak
+  default_amf: "8000"
+
+# Online Charging System (OCS)
+ocs:
+  enabled: true
+  
+  # Default rates (USD)
+  rates:
+    data_per_mb: 0.01
+    voice_per_minute: 0.10
+    sms_per_message: 0.05
+  
+  # Default quotas
+  quotas:
+    initial_data_mb: 100
+    initial_voice_minutes: 60
+    initial_sms_count: 10
+
+# Diameter Routing Agent (DRA)
+dra:
+  enabled: false
+  host: "dra.opennetwork.local"
+  realm: "opennetwork.local"
+  bind_address: "0.0.0.0"
+  port: 3868
+  
+  # Peers
+  peers: []
+  
+  # Routing rules
+  routing_rules: []
+
+# Roaming
+roaming:
+  enabled: true
+  
+  # Roaming partners
+  partners: []
+  
+  # Default roaming policy
+  default_policy:
+    national_roaming: true
+    international_roaming: false
+    data_roaming: true
+    voice_roaming: true
+    sms_roaming: true
+
+# REST API
+api:
+  enabled: true
+  bind_address: "0.0.0.0"
+  port: 8080
+  debug: false
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "hlr_hss.log"
+  console: true
