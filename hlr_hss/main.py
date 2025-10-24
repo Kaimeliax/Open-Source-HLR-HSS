@@ -13,6 +13,7 @@ from hlr_hss.authentication import AuthenticationManager
 from hlr_hss.ocs import OnlineChargingSystem
 from hlr_hss.roaming import RoamingManager
 from hlr_hss.api import create_api
+from hlr_hss.dashboard import create_dashboard_app
 
 
 def setup_logging(config: dict):
@@ -142,6 +143,29 @@ def main():
         logger.info("Initializing REST API...")
         app = create_api(hlr_hss, ocs, roaming_manager)
         
+        # Initialize VERION Dashboard
+        logger.info("Initializing VERION Dashboard...")
+        dashboard_app = create_dashboard_app(hlr_hss, ocs, roaming_manager)
+        
+        # Merge dashboard routes into main app
+        for rule in dashboard_app.url_map.iter_rules():
+            if rule.endpoint != 'static':
+                app.add_url_rule(
+                    rule.rule,
+                    endpoint=rule.endpoint,
+                    view_func=dashboard_app.view_functions[rule.endpoint],
+                    methods=rule.methods
+                )
+        
+        # Register dashboard static files
+        @app.route('/dashboard/static/<path:filename>')
+        def dashboard_static(filename):
+            import os
+            dashboard_dir = os.path.dirname(os.path.abspath(__file__))
+            static_dir = os.path.join(dashboard_dir, 'dashboard', 'static')
+            from flask import send_from_directory
+            return send_from_directory(static_dir, filename)
+        
         bind_address = api_config.get('bind_address', '0.0.0.0')
         port = api_config.get('port', 8080)
         debug = api_config.get('debug', False)
@@ -150,6 +174,7 @@ def main():
         logger.info("="*60)
         logger.info("HLR/HSS is ready!")
         logger.info(f"API available at: http://{bind_address}:{port}")
+        logger.info(f"Dashboard available at: http://{bind_address}:{port}/dashboard")
         logger.info("="*60)
         
         app.run(host=bind_address, port=port, debug=debug)
