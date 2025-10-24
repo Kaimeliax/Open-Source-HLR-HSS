@@ -1,0 +1,36 @@
+# Core dependencies
+pyyaml>=6.0
+pymongo>=4.0.0
+redis>=4.0.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+mysql-connector-python>=8.0.0
+
+# Diameter protocol support
+diameter>=0.6.0
+
+# Cryptography for authentication algorithms
+cryptography>=41.0.0
+pycryptodome>=3.19.0
+
+# Web framework for API
+flask>=3.0.0
+flask-restful>=0.3.10
+flask-cors>=4.0.0
+
+# SS7/SIGTRAN support
+scapy>=2.5.0
+
+# Async support
+asyncio
+aiohttp>=3.9.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+xmltodict>=0.13.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
