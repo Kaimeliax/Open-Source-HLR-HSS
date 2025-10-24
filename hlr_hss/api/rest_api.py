@@ -3,7 +3,8 @@ REST API for HLR/HSS management
 Provides HTTP interface for subscriber management, monitoring, and configuration
 """
 import logging
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from typing import Optional
@@ -24,7 +25,10 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     Returns:
         Flask application
     """
-    app = Flask(__name__)
+    # Get static folder path
+    static_folder = os.path.join(os.path.dirname(__file__), 'static')
+    
+    app = Flask(__name__, static_folder=static_folder, static_url_path='/static')
     CORS(app)
     api = Api(app)
     
@@ -33,6 +37,12 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     app.ocs = ocs
     app.roaming_manager = roaming_manager
     app.dra = dra
+    
+    # Route for serving the main dashboard
+    @app.route('/')
+    def index():
+        """Serve the main dashboard HTML"""
+        return send_from_directory(static_folder, 'index.html')
     
     class HealthCheck(Resource):
         def get(self):
