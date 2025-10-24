@@ -81,10 +81,25 @@ hlr-hss --init-db
 
 The system will start with:
 - REST API on http://localhost:8080
+- Web GUI Dashboard on http://localhost:8080
 - In-memory database
 - Sample subscriber (IMSI: 001010000000001)
 
-### 2. Add a subscriber via API
+### 2. Access the Web GUI
+
+Open your browser and navigate to:
+```
+http://localhost:8080
+```
+
+The Web GUI provides:
+- **Dashboard**: System status, subscriber count, active sessions, and system information
+- **Subscriber Management**: Add, view, and delete subscribers with an intuitive form
+- **Authentication Testing**: Generate authentication vectors for testing
+- **OCS Monitoring**: View active charging sessions
+- **Roaming Management**: View and manage roaming partners
+
+### 3. Add a subscriber via API
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/subscribers/001010000000002 \
@@ -97,13 +112,13 @@ curl -X POST http://localhost:8080/api/v1/subscribers/001010000000002 \
   }'
 ```
 
-### 3. Query subscriber
+### 4. Query subscriber
 
 ```bash
 curl http://localhost:8080/api/v1/subscribers/001010000000002
 ```
 
-### 4. Generate authentication vector
+### 5. Generate authentication vector
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/001010000000002
@@ -389,7 +404,7 @@ This project implements standards from:
 - [ ] Complete 5G N-interfaces implementation
 - [ ] MAP protocol for 2G support
 - [ ] SIGTRAN stack (M3UA, SCCP)
-- [ ] WebUI for management
+- [x] WebUI for management
 - [ ] Prometheus metrics export
 - [ ] Kubernetes deployment templates
 - [ ] Performance optimization

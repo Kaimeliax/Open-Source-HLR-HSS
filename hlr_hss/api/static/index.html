@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HLR/HSS Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark bg-primary navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-broadcast-pin"></i> HLR/HSS Management
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('subscribers')">
+                            <i class="bi bi-people"></i> Subscribers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('authentication')">
+                            <i class="bi bi-key"></i> Authentication
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('ocs')">
+                            <i class="bi bi-cash-coin"></i> OCS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('roaming')">
+                            <i class="bi bi-globe"></i> Roaming
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="content-section">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-speedometer2"></i> System Dashboard</h2>
+                    <hr>
+                </div>
+            </div>
+
+            <!-- System Status Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">System Status</h6>
+                                    <h3 id="system-status">Checking...</h3>
+                                </div>
+                                <i class="bi bi-heart-pulse fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Total Subscribers</h6>
+                                    <h3 id="subscriber-count">-</h3>
+                                </div>
+                                <i class="bi bi-people fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Active Sessions</h6>
+                                    <h3 id="session-count">-</h3>
+                                </div>
+                                <i class="bi bi-activity fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Roaming Partners</h6>
+                                    <h3 id="partner-count">-</h3>
+                                </div>
+                                <i class="bi bi-globe fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold" style="width: 200px;">HLR/HSS Version</td>
+                                        <td>1.0.0</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Network Support</td>
+                                        <td>2G, 3G, 4G, 5G</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Interfaces</td>
+                                        <td>S6a (LTE), S6d (3G), Cx/Dx (IMS), Gy/Ro (Charging)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Authentication Algorithms</td>
+                                        <td>Milenage, XOR, TUAK</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscribers Section -->
+        <div id="subscribers-section" class="content-section" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-people"></i> Subscriber Management</h2>
+                    <hr>
+                </div>
+            </div>
+
+            <!-- Add Subscriber Form -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-person-plus"></i> Add New Subscriber</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="add-subscriber-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">IMSI *</label>
+                                        <input type="text" class="form-control" id="imsi" placeholder="001010000000001" required>
+                                        <small class="text-muted">International Mobile Subscriber Identity</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">MSISDN *</label>
+                                        <input type="text" class="form-control" id="msisdn" placeholder="1234567890" required>
+                                        <small class="text-muted">Mobile phone number</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Ki (Subscriber Key) *</label>
+                                        <input type="text" class="form-control" id="ki" placeholder="465B5CE8B199B49FAA5F0A2EE238A6BC" required>
+                                        <small class="text-muted">32 hexadecimal characters</small>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">OPc (Operator Key) *</label>
+                                        <input type="text" class="form-control" id="opc" placeholder="E8ED289DEBA952E4283B54E88E6183CA" required>
+                                        <small class="text-muted">32 hexadecimal characters</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">AMF</label>
+                                        <input type="text" class="form-control" id="amf" value="8000">
+                                        <small class="text-muted">Authentication Management Field</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" id="status">
+                                            <option value="SERVICE_GRANTED">Service Granted</option>
+                                            <option value="OPERATOR_BARRING">Operator Barring</option>
+                                            <option value="SERVICE_NOT_ALLOWED">Service Not Allowed</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Roaming Allowed</label>
+                                        <select class="form-select" id="roaming">
+                                            <option value="true">Yes</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Subscriber
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscribers List -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-list"></i> Subscribers List</h5>
+                                <button class="btn btn-sm btn-primary" onclick="loadSubscribers()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>IMSI</th>
+                                            <th>MSISDN</th>
+                                            <th>Status</th>
+                                            <th>Roaming</th>
+                                            <th>Serving MME</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="subscribers-table-body">
+                                        <tr>
+                                            <td colspan="6" class="text-center">Loading subscribers...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Section -->
+        <div id="authentication-section" class="content-section" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-key"></i> Authentication Testing</h2>
+                    <hr>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-shield-check"></i> Generate Auth Vector</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="auth-vector-form">
+                                <div class="mb-3">
+                                    <label class="form-label">IMSI</label>
+                                    <input type="text" class="form-control" id="auth-imsi" placeholder="001010000000001" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-key"></i> Generate Vector
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-file-text"></i> Authentication Vector Result</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="auth-vector-result">
+                                <p class="text-muted">Generate an authentication vector to see results here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OCS Section -->
+        <div id="ocs-section" class="content-section" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-cash-coin"></i> Online Charging System (OCS)</h2>
+                    <hr>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-activity"></i> Active Charging Sessions</h5>
+                                <button class="btn btn-sm btn-primary" onclick="loadOCSSessions()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Session ID</th>
+                                            <th>IMSI</th>
+                                            <th>Current Balance</th>
+                                            <th>Data Usage</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ocs-sessions-table-body">
+                                        <tr>
+                                            <td colspan="5" class="text-center">Loading sessions...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roaming Section -->
+        <div id="roaming-section" class="content-section" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-globe"></i> Roaming Management</h2>
+                    <hr>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-building"></i> Roaming Partners</h5>
+                                <button class="btn btn-sm btn-primary" onclick="loadRoamingPartners()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>PLMN ID</th>
+                                            <th>Partner Name</th>
+                                            <th>Roaming Type</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="roaming-partners-table-body">
+                                        <tr>
+                                            <td colspan="4" class="text-center">Loading roaming partners...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="notification-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
