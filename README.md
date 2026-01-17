@@ -172,6 +172,25 @@ dra:
   port: 3868
 ```
 
+### Configure eNB Profiles
+
+```yaml
+ran:
+  enb_profiles:
+    - enb_id: "srsenb-b210mini"
+      model: "LibreSDR B210mini"
+      downlink_modulation: "1024QAM"
+      uplink_modulation: "256QAM"
+      mimo: "2x2"
+      max_transmission_mode: "TM9"
+      contiguous_bandwidth_mhz: 30
+      carrier_bandwidth_options: ["15+15", "20+10"]
+      sample_rate_msps: 61.44
+      duplex_modes: ["TDD", "FDD"]
+      qos_enforcement: true
+      cell_broadcast_supported: false
+```
+
 ## API Reference
 
 ### Subscriber Management
@@ -199,6 +218,23 @@ DELETE /api/v1/subscribers/{imsi}
 **List Subscribers**
 ```
 GET /api/v1/subscribers
+```
+
+Subscribers accept `qos_profile` and `ambr_uplink`/`ambr_downlink`. The QoS profile supports `mbr_uplink`, `mbr_downlink`, `gbr_uplink`, and `gbr_downlink` alongside existing QCI fields.
+
+### eNB Profiles
+
+**List/Create eNB Profiles**
+```
+GET /api/v1/enb
+POST /api/v1/enb
+```
+
+**Get/Update/Delete eNB Profile**
+```
+GET /api/v1/enb/{enb_id}
+PUT /api/v1/enb/{enb_id}
+DELETE /api/v1/enb/{enb_id}
 ```
 
 ### Authentication
