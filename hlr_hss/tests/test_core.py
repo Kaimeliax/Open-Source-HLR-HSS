@@ -2,7 +2,7 @@
 Unit tests for HLR/HSS core functionality
 """
 import pytest
-from hlr_hss.core import HLR_HSS, Subscriber, LocationInfo
+from hlr_hss.core import HLR_HSS, Subscriber, LocationInfo, ENodeBProfile
 from hlr_hss.database import MemoryDatabase
 
 
@@ -122,3 +122,35 @@ def test_get_subscriber_by_msisdn(hlr_hss, sample_subscriber):
     retrieved = hlr_hss.get_subscriber_by_msisdn(sample_subscriber.msisdn)
     assert retrieved is not None
     assert retrieved.imsi == sample_subscriber.imsi
+
+
+def test_register_enb_profile(hlr_hss):
+    """Test eNodeB profile registration"""
+    profile = ENodeBProfile(enb_id="srsenb-b210mini")
+    result = hlr_hss.register_enb_profile(profile)
+    assert result is True
+    retrieved = hlr_hss.get_enb_profile("srsenb-b210mini")
+    assert retrieved is not None
+    assert retrieved.model == "LibreSDR B210mini"
+
+
+def test_qos_normalization_clamps_ambr(hlr_hss):
+    """Test QoS normalization clamps to AMBR"""
+    subscriber = Subscriber(
+        imsi="001010000000010",
+        msisdn="1234567810",
+        qos_profile={
+            "mbr_uplink": 200000000,
+            "mbr_downlink": 200000000,
+            "gbr_uplink": 150000000,
+            "gbr_downlink": 150000000,
+        },
+        ambr_uplink=100000000,
+        ambr_downlink=120000000,
+    )
+    hlr_hss.create_subscriber(subscriber)
+    retrieved = hlr_hss.get_subscriber(subscriber.imsi)
+    assert retrieved.qos_profile["mbr_uplink"] == 100000000
+    assert retrieved.qos_profile["mbr_downlink"] == 120000000
+    assert retrieved.qos_profile["gbr_uplink"] == 100000000
+    assert retrieved.qos_profile["gbr_downlink"] == 120000000

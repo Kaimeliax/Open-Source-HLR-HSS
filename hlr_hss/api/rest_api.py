@@ -8,6 +8,8 @@ from flask_restful import Resource, Api
 from flask_cors import CORS
 from typing import Optional
 
+from hlr_hss.core import Subscriber, ENodeBProfile
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,13 +55,14 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
                 'roaming_allowed': subscriber.roaming_allowed,
                 'apn_list': subscriber.apn_list,
                 'serving_mme': subscriber.serving_mme,
+                'qos_profile': subscriber.qos_profile,
+                'ambr_uplink': subscriber.ambr_uplink,
+                'ambr_downlink': subscriber.ambr_downlink,
             }, 200
         
         def post(self, imsi):
             """Create new subscriber"""
             data = request.json
-            
-            from hlr_hss.core import Subscriber
             
             subscriber = Subscriber(
                 imsi=imsi,
@@ -70,6 +73,9 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
                 sqn=data.get('sqn', 0),
                 subscriber_status=data.get('subscriber_status', 'SERVICE_GRANTED'),
                 roaming_allowed=data.get('roaming_allowed', True),
+                qos_profile=data.get('qos_profile'),
+                ambr_uplink=data.get('ambr_uplink', 100000000),
+                ambr_downlink=data.get('ambr_downlink', 100000000),
             )
             
             success = app.hlr_hss.create_subscriber(subscriber)
@@ -108,6 +114,61 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
                 return {'subscribers': subscribers, 'count': len(subscribers)}, 200
             else:
                 return {'error': 'List not supported'}, 501
+
+    class EnbProfileList(Resource):
+        def get(self):
+            """List eNodeB profiles"""
+            profiles = app.hlr_hss.list_enb_profiles()
+            return {
+                'enb_profiles': [profile.__dict__ for profile in profiles],
+                'count': len(profiles)
+            }, 200
+
+        def post(self):
+            """Create eNodeB profile"""
+            data = request.json or {}
+            enb_id = data.get('enb_id')
+            if not enb_id:
+                return {'error': 'enb_id is required'}, 400
+
+            try:
+                profile = ENodeBProfile(**data)
+            except (TypeError, ValueError) as e:
+                logger.warning(f"Invalid eNodeB profile payload: {e}")
+                return {'error': 'Invalid eNodeB profile payload'}, 400
+            success = app.hlr_hss.register_enb_profile(profile)
+
+            if success:
+                return {'message': 'eNodeB profile created'}, 201
+            else:
+                return {'error': 'eNodeB profile already exists'}, 409
+
+    class EnbProfileResource(Resource):
+        def get(self, enb_id):
+            """Get eNodeB profile"""
+            profile = app.hlr_hss.get_enb_profile(enb_id)
+            if not profile:
+                return {'error': 'eNodeB profile not found'}, 404
+            return profile.__dict__, 200
+
+        def put(self, enb_id):
+            """Update eNodeB profile"""
+            data = request.json or {}
+            result = app.hlr_hss.update_enb_profile(enb_id, data)
+            if result is None:
+                return {'error': 'eNodeB profile not found'}, 404
+            if result:
+                return {'message': 'eNodeB profile updated'}, 200
+            else:
+                return {'error': 'Invalid eNodeB profile update'}, 400
+
+        def delete(self, enb_id):
+            """Delete eNodeB profile"""
+            success = app.hlr_hss.delete_enb_profile(enb_id)
+            if success:
+                return {'message': 'eNodeB profile deleted'}, 200
+            else:
+                return {'error': 'Failed to delete eNodeB profile'}, 404
     
     class LocationResource(Resource):
         def get(self, imsi):
@@ -228,6 +289,8 @@ def create_api(hlr_hss, ocs=None, roaming_manager=None, dra=None):
     api.add_resource(HealthCheck, '/health')
     api.add_resource(SubscriberResource, '/api/v1/subscribers/<string:imsi>')
     api.add_resource(SubscriberList, '/api/v1/subscribers')
+    api.add_resource(EnbProfileList, '/api/v1/enb')
+    api.add_resource(EnbProfileResource, '/api/v1/enb/<string:enb_id>')
     api.add_resource(LocationResource, '/api/v1/location/<string:imsi>')
     api.add_resource(AuthVectorResource, '/api/v1/auth/<string:imsi>')
     api.add_resource(OCSSessionResource, '/api/v1/ocs/sessions', '/api/v1/ocs/sessions/<string:session_id>')

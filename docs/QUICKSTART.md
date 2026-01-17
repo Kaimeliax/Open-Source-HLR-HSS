@@ -129,6 +129,27 @@ database:
     password: "your_password"
 ```
 
+### Configure eNB Profiles
+
+```yaml
+ran:
+  enb_profiles:
+    - enb_id: "srsenb-b210mini"
+      model: "LibreSDR B210mini"
+      downlink_modulation: "1024QAM"
+      uplink_modulation: "256QAM"
+      mimo: "2x2"
+      max_transmission_mode: "TM9"
+      contiguous_bandwidth_mhz: 30
+      carrier_bandwidth_options: ["15+15", "20+10"]
+      sample_rate_msps: 61.44
+      duplex_modes: ["TDD", "FDD"]
+      qos_enforcement: true
+      cell_broadcast_supported: false
+```
+
+Use `/api/v1/enb` and `/api/v1/enb/{enb_id}` to manage profiles, and include `qos_profile` plus `ambr_uplink`/`ambr_downlink` when creating subscribers.
+
 ### Custom Configuration
 
 1. Copy the default configuration:

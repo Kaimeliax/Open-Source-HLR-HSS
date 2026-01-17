@@ -7,7 +7,7 @@ import yaml
 import argparse
 from pathlib import Path
 
-from hlr_hss.core import HLR_HSS
+from hlr_hss.core import HLR_HSS, ENodeBProfile
 from hlr_hss.database import create_database_handler
 from hlr_hss.authentication import AuthenticationManager
 from hlr_hss.ocs import OnlineChargingSystem
@@ -101,6 +101,15 @@ def main():
     # Initialize HLR/HSS
     logger.info("Initializing HLR/HSS core...")
     hlr_hss = HLR_HSS(db_handler)
+
+    ran_config = config.get('ran', {})
+    enb_profiles = ran_config.get('enb_profiles', [])
+    for profile_data in enb_profiles:
+        try:
+            profile = ENodeBProfile(**profile_data)
+            hlr_hss.register_enb_profile(profile)
+        except (TypeError, ValueError) as e:
+            logger.warning(f"Failed to load eNodeB profile {profile_data}: {e}")
     
     # Initialize sample data if requested
     if args.init_db:
